@@ -6,6 +6,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Include additional scripts
 include(cmake/Config.cmake)
+include(cmake/DepsUtils.cmake)
 
 # turn on using solution folders
 set_property( GLOBAL PROPERTY USE_FOLDERS ON)
@@ -17,7 +18,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 # Apps
 # ----------------
 
-set(APPS 0_test)
+set(APPS 0_test 1_opencvgl)
 
 FOREACH(app ${APPS})
     add_subdirectory(${app})
