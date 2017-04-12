@@ -1,5 +1,6 @@
 #include <iostream>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include <GLFW/glfw3.h>
 #include "linmath.h"
 
@@ -45,13 +46,21 @@ const static char* shaderF_glsl = "// fragment shader\n "
 "}";
 
 
+struct vertex
+{
+	float x, y;
+	float u, v;
+	float r, g, b;
+};
+
+std::vector<vertex> vertices;
 
 
 static const struct
 {
 	float x, y;
 	float r, g, b;
-} vertices[3] =
+} verticess[3] =
 {
 	{ -0.6f, -0.4f, 1.f, 0.f, 0.f },
 	{  0.6f, -0.4f, 0.f, 1.f, 0.f },
@@ -79,6 +88,20 @@ static void error_callback(int error, const char* description)
 	fprintf(stderr, "Error: %s\n", description);
 }
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+	{
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		printf("%d x %d  -  %.0f, %.0f\n", width, height, xpos, ypos);
+		vertices.push_back(vertex{(static_cast<float>(xpos) / width * 2.f) - 1.f, ((1.f - static_cast<float>(ypos) / height) * 2.f) -1.f, 1, 0, 1, 0, 0});
+		cout << vertices.back().x << ", " << vertices.back().y << endl;
+	}
+}
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -87,9 +110,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 int main(int argc, char* argv[])
 {
+	//vertices.push_back(vertex{-0.2, -0.2, 1, 0, 1, 0, 0});
+	//vertices.push_back(vertex{0.2, 0.2, 1, 0, 0, 1, 0});
+	//vertices.push_back(vertex{0, 0, 1, 0, 0, 1, 0});
+	//vertices.push_back(vertex{0.5, 0.5, 1, 0, 1, 0, 0});
+	//vertices.push_back(vertex{0.3, -0.3, 1, 0, 0, 0, 1});
 	std::shared_ptr<float> pVertices;
 	std::shared_ptr<float> pUV;
 	GLuint m_texture;
+	GLuint vboId;
 
 	//initialize rectangle
 	float left = -1;
@@ -112,8 +141,8 @@ int main(int argc, char* argv[])
 
 	}, std::default_delete<float[]>());
 
-	Mat img(480, 640, CV_8UC3, Scalar::all(0));
-	Mat img2(300, 300, CV_8UC3, Scalar(0, 0, 255));
+	Mat img(480, 640, CV_8UC3, Scalar::all(100));
+	Mat img2(300, 300, CV_8UC3, Scalar(255, 0, 0));
 	img2.copyTo(img(Rect(Point(50, 50), img2.size())));
 
 	GLFWwindow* window;
@@ -136,12 +165,19 @@ int main(int argc, char* argv[])
 	}
 
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
 //	glGenBuffers(1, &vertex_buffer);
 //	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 //	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &vboId);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//Initialize texture
 	int error;
@@ -219,9 +255,12 @@ int main(int argc, char* argv[])
 
 	printf("Program: %d\n", program);
 
-
+int64 t0 = cv::getTickCount();
 	while (!glfwWindowShouldClose(window))
 	{
+		int64 t1 = cv::getTickCount();
+		printf("%.1f FPS\n", 1.f / static_cast<float>((t1-t0)/cv::getTickFrequency()));
+		t0 = cv::getTickCount();
 		float ratio;
 		int width, height;
 //		mat4x4 m, p, mvp;
@@ -274,6 +313,38 @@ int main(int argc, char* argv[])
 		//Draw
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		GLCHECK
+
+		// --------------
+		// Points
+		// --------------
+
+		if (vertices.size() > 0)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, vboId);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glUseProgram(0);
+			GLCHECK
+			glBindBuffer(GL_ARRAY_BUFFER, vboId);
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_COLOR_ARRAY);
+			glVertexPointer(2, GL_FLOAT, sizeof(vertex), (void*)(sizeof( float ) * 0));
+			glColorPointer(3, GL_FLOAT, sizeof(vertex), (void*)(sizeof( float ) * 4));
+			glPointSize(5.f);
+			glDrawArrays(GL_POINTS, 0, vertices.size());
+			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisableClientState(GL_COLOR_ARRAY);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			/*
+			Mat imgP = img.clone();
+			for (auto p : vertices)
+				circle(imgP, Point((p.x + 1.f) / 2.f * width, (p.y + 1.f) / 2.f * height), 5, Scalar(0, 0, 255));
+			imshow("img", imgP);
+			waitKey(1);
+			*/
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

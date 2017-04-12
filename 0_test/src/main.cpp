@@ -244,8 +244,221 @@ void fitBoxSize(float &boxSize, vector<int>& bestHypothesis, const float minSize
 	}
 }
 
+#define bool int
+#define R 6
+#define C 5
+
+/* UTILITY FUNCTIONS */
+/* Function to get minimum of three values */
+int min(int a, int b, int c)
+{
+	int m = a;
+	if (m > b)
+		m = b;
+	if (m > c)
+		m = c;
+	return m;
+}
+
+int max(int a, int b, int c)
+{
+	int m = a;
+	if (m < b)
+		m = b;
+	if (m < c)
+		m = c;
+	return m;
+}
+
+void printMaxSubSquare(bool M[R][C])
+{
+	int i,j;
+	int S[R][C];
+	int max_of_s, max_i, max_j;
+
+	/* Set first column of S[][]*/
+	for(i = 0; i < R; i++)
+		S[i][0] = M[i][0];
+
+	/* Set first row of S[][]*/
+	for(j = 0; j < C; j++)
+		S[0][j] = M[0][j];
+
+	/* Construct other entries of S[][]*/
+	for(i = 1; i < R; i++)
+	{
+		for(j = 1; j < C; j++)
+		{
+			if(M[i][j] == 1)
+				S[i][j] = min(S[i][j-1], S[i-1][j], S[i-1][j-1]) + 1;
+			else
+				S[i][j] = 0;
+		}
+	}
+
+	/* Find the maximum entry, and indexes of maximum entry
+	 in S[][] */
+	max_of_s = S[0][0]; max_i = 0; max_j = 0;
+	for(i = 0; i < R; i++)
+	{
+		for(j = 0; j < C; j++)
+		{
+			if(max_of_s < S[i][j])
+			{
+				max_of_s = S[i][j];
+				max_i = i;
+				max_j = j;
+			}
+		}
+	}
+
+	//printf("\n Biggest matrix of 1:\n(r,c,h,w)=(%d,%d,%d,%d)", );
+	for(i = max_i; i > max_i - max_of_s; i--)
+	{
+		for(j = max_j; j > max_j - max_of_s; j--)
+		{
+			printf("%d ", M[i][j]);
+		}
+		printf("\n");
+	}
+}
+
+// The main function to find the maximum rectangular area under given
+// histogram with n bars
+int maxHist(vector<int> hist, int &id, int &w)
+{
+	// Create an empty stack. The stack holds indexes of hist[] vector
+	// The bars stored in stack are always in increasing order of their heights.
+	stack<int> s;
+
+	int maxArea = 0; // Initalize max area
+	int tp;  // To store top of stack
+	int areaWithTop; // To store area with top bar as the smallest bar
+
+	// Run through all bars of given histogram
+	int i = 0;
+	while (i < hist.size())
+	{
+		// If this bar is higher than the bar on top stack, push it to stack
+		if (s.empty() || hist[s.top()] < hist[i])
+			s.push(i++);
+
+		// If this bar is lower than top of stack, then calculate area of rectangle
+		// with stack top as the smallest bar. 'i' is 'right index' for the top and
+		// element before top in stack is 'left index'
+		else
+		{
+			tp = s.top();  // store the top index
+			s.pop();  // pop the top
+
+			// Calculate the area with hist[tp] stack as smallest bar
+			auto currW = s.empty() ? i : i - s.top() - 1;
+			areaWithTop = hist[tp] * currW;
+
+			// update max area, if needed
+			if (maxArea < areaWithTop)
+			{
+				id = i - currW;
+				w = currW;
+				maxArea = areaWithTop;
+			}
+		}
+	}
+
+	// Now pop the remaining bars from stack and calculate area with every
+	// popped bar as the smallest bar
+	while (s.empty() == false)
+	{
+		tp = s.top();
+		s.pop();
+		auto currW = s.empty() ? i : i - s.top() - 1;
+		areaWithTop = hist[tp] * currW;
+
+		if (maxArea < areaWithTop)
+		{
+			id = tp;
+			w = currW;
+			maxArea = areaWithTop;
+		}
+	}
+
+	return maxArea;
+}
+
+// Returns area of the largest rectangle with all 1s in A[][]
+void maxRectangle(vector<vector<int>> A, int &r, int &c, int &h, int &w)
+{
+	// Calculate area for first row and initialize it as result
+	int id, currW;
+	int result = maxHist(A[0], id, currW);
+	h = result / currW;
+	r = 0;
+	c = id;
+	w = currW;
+
+	// iterate over row to find maximum rectangular area
+	// considering each row as histogram
+	for (int i = 1; i < A.size(); i++)
+	{
+		for (int j = 0; j < A[0].size(); j++)
+			if (A[i][j])
+				A[i][j] += A[i - 1][j];
+
+		// Update results if area is bigger
+		auto currMax = maxHist(A[i], id, currW);
+		if (currMax > result)
+		{
+			h = currMax / currW;
+			r = i - h + 1;
+			c = id;
+			w = currW;
+			result = currMax;
+		}
+	}
+}
+
 int main(int argc, char* argv[])
 {
+	if (1)
+	{
+		vector<vector<int>> M = {
+			{0, 1, 1, 0, 1},
+			{1, 1, 0, 1, 0},
+			{0, 1, 1, 1, 0},
+			{1, 1, 1, 1, 0},
+			{1, 1, 1, 1, 1},
+			{0, 1, 1, 1, 0}};
+		int r, c, h, w;
+		maxRectangle(M, r, c, h, w);
+		printf("(r, c, h, w) = (%d, %d, %d, %d)\n", r, c, h, w);
+	}
+	if (0)
+	{
+		vector<int> hist = {6, 2, 5, 4, 5, 1, 6};
+		int id, w;
+		cout << "Maximum area is " << maxHist(hist, id, w) << endl;
+	}
+	if (0)
+	{
+		bool M[R][C] ={
+			{0, 1, 1, 0, 1},
+			{1, 1, 0, 1, 0},
+			{0, 1, 1, 1, 0},
+			{1, 1, 1, 1, 0},
+			{1, 1, 1, 1, 1},
+			{0, 1, 1, 1, 0}};
+
+		printMaxSubSquare(M);
+	}
+	if (0)
+	{
+		int n1 = -1;
+		int n2 = 4;
+		printf("Modulo operator with negative values\n");
+		printf("%d %% %d = %d\n", n1, n2, n1 % n2);
+		printf("((%d %% %d) + %d) %% %d) = %d\n", n1, n2, n2, n2, ((n1 % n2) + n2) % n2);
+	}
+
 	if(0)
 	{
 		vector<float> depths = {1083, 1415, 1745, 2079};
@@ -253,9 +466,9 @@ int main(int argc, char* argv[])
 		printf("%.3f\n", getClosestElement(depths, boxDepth));
 	}
 
-	if(1)
+	if(0)
 	{
-		vector<float> vec = {0.f, 10.f, 215.f, 800.f, 1100.f};
+		vector<float> vec = {0.f, 15.f, 215.f, 800.f, 1100.f};
 		const float minSize = 200.f;
 		const float maxSize = 600.f;
 		vector<int> bestHypothesis;
