@@ -18,7 +18,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 # Apps
 # ----------------
 
-set(APPS 0_test 1_opencvgl)
+set(APPS 0_test)
 
 FOREACH(app ${APPS})
     add_subdirectory(${app})

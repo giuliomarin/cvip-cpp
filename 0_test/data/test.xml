@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opencv_storage>
+<a>2</a>
+<b>3.5</b>
+<c>c</c>
+<d>a b c</d>
+<e>
+	<e1>1 2</e1>
+	<e2>"e2"</e2>
+</e>
+</opencv_storage>

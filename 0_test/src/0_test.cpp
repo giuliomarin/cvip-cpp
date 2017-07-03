@@ -3,8 +3,11 @@
 #include <stack>
 #include <cmath>
 #include <cfloat>
+#include <sstream>
+#include "opencv2/core.hpp"
 
 using namespace std;
+using namespace cv;
 
 template<class T>
 T getClosestElement(const std::vector<T> list, const T e)
@@ -417,67 +420,209 @@ void maxRectangle(vector<vector<int>> A, int &r, int &c, int &h, int &w)
 	}
 }
 
+template <typename T>
+vector<vector<T>> getMatrix(const T* data, size_t rows, size_t cols)
+{
+	vector<vector<T>> mat;
+	mat.resize(rows);
+	for (int r = 0; r < rows; r++)
+	{
+		mat[r].resize(cols);
+		copy(data + r * cols, data + (r + 1) * cols, &mat[r][0]);
+	}
+	return mat;
+}
+
+//! Swap a number without using a third variable
+template <typename T>
+void swapNumbers(T &a, T &b)
+{
+	a = b - a;
+	b = b - a;
+	a = b + a;
+}
+
+void writeSeq(FileStorage &fs, const FileNode &fn)
+{
+	switch (fn.type())
+	{
+		case 1:
+		{
+			fs << (int)fn;
+			break;
+		}
+		case 2:
+		{
+			fs  << (float)fn;
+			break;
+		}
+		case 3:
+		{
+			fs  << (string)fn;
+			break;
+		}
+
+  default:
+			break;
+	}
+}
+
+void writeNode(FileStorage &fs, const FileNode &fn)
+{
+	switch (fn.type())
+	{
+		case 1:
+		{
+			fs << fn.name() << (int)fn;
+			break;
+		}
+		case 2:
+		{
+			fs << fn.name() << (float)fn;
+			break;
+		}
+		case 3:
+		{
+			fs << fn.name() << (string)fn;
+			break;
+		}
+		case 5:
+		{
+			fs << fn.name() << "[";
+			for (FileNodeIterator it = fn.begin(); it != fn.end(); ++it)
+				writeSeq(fs, *it);
+			fs << "]";
+			break;
+		}
+		case 6:
+		{
+			fs << fn.name() << "{";
+			for (FileNodeIterator it = fn.begin(); it != fn.end(); ++it)
+				writeNode(fs, *it);
+			fs << "}";
+			break;
+		}
+
+  default:
+			break;
+	}
+}
+
+void convertXmlYml(string in, string out)
+{
+	FileStorage fsIn(in, FileStorage::READ);
+	FileStorage fsOut(out, FileStorage::WRITE);
+	const auto node = fsIn.root();
+	for (FileNodeIterator it = node.begin(); it != node.end(); ++it)
+	{
+		writeNode(fsOut, *it);
+	}
+	fsIn.release();
+	fsOut.release();
+}
+
 int main(int argc, char* argv[])
 {
-	if (1)
+	switch (9)
 	{
-		vector<vector<int>> M = {
-			{0, 1, 1, 0, 1},
-			{1, 1, 0, 1, 0},
-			{0, 1, 1, 1, 0},
-			{1, 1, 1, 1, 0},
-			{1, 1, 1, 1, 1},
-			{0, 1, 1, 1, 0}};
-		int r, c, h, w;
-		maxRectangle(M, r, c, h, w);
-		printf("(r, c, h, w) = (%d, %d, %d, %d)\n", r, c, h, w);
-	}
-	if (0)
-	{
-		vector<int> hist = {6, 2, 5, 4, 5, 1, 6};
-		int id, w;
-		cout << "Maximum area is " << maxHist(hist, id, w) << endl;
-	}
-	if (0)
-	{
-		bool M[R][C] ={
-			{0, 1, 1, 0, 1},
-			{1, 1, 0, 1, 0},
-			{0, 1, 1, 1, 0},
-			{1, 1, 1, 1, 0},
-			{1, 1, 1, 1, 1},
-			{0, 1, 1, 1, 0}};
+		case 9:
+		{
+			convertXmlYml("/GitHub/cvip-cpp/0_test/data/test.xml", "/GitHub/cvip-cpp/0_test/data/test_out.yml");
+			convertXmlYml("/GitHub/cvip-cpp/0_test/data/test.yml", "/GitHub/cvip-cpp/0_test/data/test_out.xml");
+			break;
+		}
+		case 8:
+		{
+			int a = 2, b = 5;
+			printf("a = %d\tb = %d\n", a, b);
+			swapNumbers(a, b);
+			printf("a = %d\tb = %d\n", a, b);
+			break;
+		}
+		case 7:
+		{
+			string numStr = "3.5";
+			float num;
+			istringstream(numStr) >> num;
+			printf("%s, %f\n", numStr.c_str(), num);
+			break;
+		}
+		case 6:
+		{
+			vector<int> v = {0, 1, 2, 3, 4, 5};
+			vector<vector<int>> m = getMatrix<int>(&v[0], 3, 2);
+			printf("%d, %d, %d, %d, %d, %d\n", v[0], v[1], v[2], v[3], v[4], v[5]);
+			printf("%d, %d, %d, %d, %d, %d\n", m[0][0], m[0][1], m[1][0], m[1][1], m[2][0], m[2][1]);
+			break;
+		}
+		case 5:
+		{
+			vector<vector<int>> M = {
+				{0, 1, 1, 0, 1},
+				{1, 1, 0, 1, 0},
+				{0, 1, 1, 1, 0},
+				{1, 1, 1, 1, 0},
+				{1, 1, 1, 1, 1},
+				{0, 1, 1, 1, 0}};
+			int r, c, h, w;
+			maxRectangle(M, r, c, h, w);
+			printf("(r, c, h, w) = (%d, %d, %d, %d)\n", r, c, h, w);
+			break;
+		}
+		case 4:
+		{
+			vector<int> hist = {6, 2, 5, 4, 5, 1, 6};
+			int id, w;
+			cout << "Maximum area is " << maxHist(hist, id, w) << endl;
+			break;
+		}
+		case 3:
+		{
+			bool M[R][C] ={
+				{0, 1, 1, 0, 1},
+				{1, 1, 0, 1, 0},
+				{0, 1, 1, 1, 0},
+				{1, 1, 1, 1, 0},
+				{1, 1, 1, 1, 1},
+				{0, 1, 1, 1, 0}};
 
-		printMaxSubSquare(M);
-	}
-	if (0)
-	{
-		int n1 = -1;
-		int n2 = 4;
-		printf("Modulo operator with negative values\n");
-		printf("%d %% %d = %d\n", n1, n2, n1 % n2);
-		printf("((%d %% %d) + %d) %% %d) = %d\n", n1, n2, n2, n2, ((n1 % n2) + n2) % n2);
-	}
+			printMaxSubSquare(M);
+			break;
+		}
+		case 2:
+		{
+			int n1 = -1;
+			int n2 = 4;
+			printf("Modulo operator with negative values\n");
+			printf("%d %% %d = %d\n", n1, n2, n1 % n2);
+			printf("((%d %% %d) + %d) %% %d) = %d\n", n1, n2, n2, n2, ((n1 % n2) + n2) % n2);
+			break;
+		}
 
-	if(0)
-	{
-		vector<float> depths = {1083, 1415, 1745, 2079};
-		float boxDepth = 80;
-		printf("%.3f\n", getClosestElement(depths, boxDepth));
-	}
+		case 1:
+		{
+			vector<float> depths = {1083, 1415, 1745, 2079};
+			float boxDepth = 80;
+			printf("%.3f\n", getClosestElement(depths, boxDepth));
+			break;
+		}
 
-	if(0)
-	{
-		vector<float> vec = {0.f, 15.f, 215.f, 800.f, 1100.f};
-		const float minSize = 200.f;
-		const float maxSize = 600.f;
-		vector<int> bestHypothesis;
-		float bestSize;
-		fitBoxSize(bestSize, bestHypothesis, minSize, maxSize, vec);
-		printf("Best fit1: %.1f\n", bestSize);
-		fitBoxSize2(bestSize, bestHypothesis, minSize, maxSize, vec);
-		printf("Best fit2: %.1f\n", bestSize);
+		case 0:
+		{
+			vector<float> vec = {0.f, 15.f, 215.f, 800.f, 1100.f};
+			const float minSize = 200.f;
+			const float maxSize = 600.f;
+			vector<int> bestHypothesis;
+			float bestSize;
+			fitBoxSize(bestSize, bestHypothesis, minSize, maxSize, vec);
+			printf("Best fit1: %.1f\n", bestSize);
+			fitBoxSize2(bestSize, bestHypothesis, minSize, maxSize, vec);
+			printf("Best fit2: %.1f\n", bestSize);
+			break;
+		}
+		default:
+			break;
 	}
-
-  return 0;
+	
+	return 0;
 }

@@ -11,7 +11,7 @@ add_executable(${project_name} ${project_src_files})
 # -------------------
 # Libraries
 # -------------------
-
+link_opencv(${project_name})
 
 
 # Log message
