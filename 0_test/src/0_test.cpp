@@ -4,7 +4,9 @@
 #include <cmath>
 #include <cfloat>
 #include <sstream>
+#include <fstream>
 #include "opencv2/core.hpp"
+#include "opencv2/imgcodecs.hpp"
 
 using namespace std;
 using namespace cv;
@@ -521,10 +523,69 @@ void convertXmlYml(string in, string out)
 	fsOut.release();
 }
 
+struct Foo
+{
+	int a;
+	float b;
+	string c;
+
+	//! Overload operator<<.
+	friend inline ostream& operator<<(ostream &os, const Foo &p)
+	{
+		const string sep = ",";
+		os << p.a << sep << p.b << sep << p.c << "\n";
+		return os;
+	}
+
+	//! Overload operator>>.
+	friend inline istream& operator>>(istream &is, Foo &p)
+	{
+		char sep;
+		is >> std::noskipws >> p.a >> sep >> p.b >> sep >> p.c;
+		return is;
+	}
+};
+
 int main(int argc, char* argv[])
 {
-	switch (9)
+	switch (12)
 	{
+		case 12:
+		{
+			Foo foo;
+			foo.a = 1;
+			foo.b = 0.5;
+			foo.c = "c";
+
+			// Write
+			ofstream ofs("/GitHub/cvip-cpp/0_test/data/operators.txt", std::ofstream::out);
+			ofs << foo;
+			ofs.close();
+
+			// Read
+			Foo bar;
+			ifstream ifs("/GitHub/cvip-cpp/0_test/data/operators.txt", std::ofstream::in);
+			ifs >> bar;
+			ifs.close();
+			printf("a=%d, b=%f, c=%s\n", bar.a, bar.b, bar.c.c_str());
+			break;
+		}
+		case 11:
+		{
+			// It does not crash
+			Mat img = imread("file_does_not_exist.png");
+			break;
+		}
+		case 10:
+		{
+			FileStorage fs("/GitHub/cvip-cpp/0_test/data/test.xml", FileStorage::READ);
+			int a, aa;
+			fs["a"] >> a;
+			cout << "fs[a]: " << a << endl;
+			fs["aa"] >> aa;
+			cout << "empty fs[aa]: " << aa << endl;
+			break;
+		}
 		case 9:
 		{
 			convertXmlYml("/GitHub/cvip-cpp/0_test/data/test.xml", "/GitHub/cvip-cpp/0_test/data/test_out.yml");
