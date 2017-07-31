@@ -541,7 +541,7 @@ struct Foo
 	friend inline istream& operator>>(istream &is, Foo &p)
 	{
 		char sep;
-		is >> std::noskipws >> p.a >> sep >> p.b >> sep >> p.c;
+		is >> p.a >> sep >> p.b >> sep >> p.c;
 		return is;
 	}
 };
@@ -560,14 +560,23 @@ int main(int argc, char* argv[])
 			// Write
 			ofstream ofs("/GitHub/cvip-cpp/0_test/data/operators.txt", std::ofstream::out);
 			ofs << foo;
+			foo.a = 2;
+			foo.b = 2.5;
+			foo.c = "d";
+			ofs << foo;
 			ofs.close();
 
 			// Read
-			Foo bar;
 			ifstream ifs("/GitHub/cvip-cpp/0_test/data/operators.txt", std::ofstream::in);
-			ifs >> bar;
+			while (true)
+			{
+				Foo bar;
+				ifs >> bar;
+				if(ifs.fail())
+					break;
+				printf("a=%d, b=%f, c=%s\n", bar.a, bar.b, bar.c.c_str());
+			}
 			ifs.close();
-			printf("a=%d, b=%f, c=%s\n", bar.a, bar.b, bar.c.c_str());
 			break;
 		}
 		case 11:
