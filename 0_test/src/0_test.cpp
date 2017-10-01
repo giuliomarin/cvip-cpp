@@ -5,6 +5,7 @@
 #include <cfloat>
 #include <sstream>
 #include <fstream>
+#include <thread>
 #include "opencv2/core.hpp"
 #include "opencv2/imgcodecs.hpp"
 
@@ -546,10 +547,125 @@ struct Foo
 	}
 };
 
+class Order
+{
+public:
+	int a;
+	int b;
+	Order(): a(1),b(a){}
+	// Order(): b(a), a(1){} //warning, should be Order():a(1),b(a)
+};
+
 int main(int argc, char* argv[])
 {
-	switch (12)
+	// Get parameters
+	if (argc < 2)
 	{
+		printf("Usage:\n%s path_to_data_path\n", argv[0]);
+		return 1;
+	}
+	string dataPath(argv[1]);
+
+	switch (20)
+	{
+		case 20:
+		{
+			string path = "/dev/null/test.yml";
+			string noext = path.substr(0, path.find_last_of("."));
+			printf("without extension: %s\n", noext.c_str());
+			string ext = path.substr(path.find_last_of("."));
+			printf("extension with dot: %s\n", ext.c_str());
+			break;
+		}
+		case 19:
+		{
+			printf("2.8/2=%.0f\n", 2.3 / 2);
+			break;
+		}
+		case 18:
+		{
+			time_t now;
+			time(&now);
+
+			struct tm time1 = *localtime(&now);
+			time1.tm_year = 2017 - 1900;
+			time1.tm_mon = 7;
+			time1.tm_mday = 29;
+			time1.tm_hour = 18;
+			time1.tm_min = 29;
+			time1.tm_sec = 4;
+
+			struct tm time2 = *localtime(&now);
+			time2.tm_year = 2017 - 1900;
+			time2.tm_mon = 7;
+			time2.tm_mday = 29;
+			time2.tm_hour = 18;
+			time2.tm_min = 29;
+			time2.tm_sec = 0;
+
+			const float timeDiff = static_cast<float>(difftime(mktime(&time1), mktime(&time2)));
+			printf("%.0f\n", timeDiff);
+			break;
+		}
+		case 17:
+		{
+			vector<int> v = {1, 2, 3, 4, 5, 6};
+			for (const auto e : v)
+				printf("%d ", e);
+			printf("\n");
+			rotate(v.begin(), v.end() - 2, v.end());
+			for (const auto e : v)
+				printf("%d ", e);
+			printf("\n");
+			rotate(v.begin(), v.begin() + 2, v.end());
+			for (const auto e : v)
+				printf("%d ", e);
+			printf("\n");
+			break;
+		}
+		case 16:
+		{
+			ofstream ofs("./test.txt");
+			ofs << "1,2,3,four,5.0\n";
+			ofs.close();
+			ifstream ifs("./test.txt");
+			string str;
+			getline(ifs, str, ',');
+			printf("%s\n", str.c_str());
+			getline(ifs, str, ',');
+			printf("%s\n", str.c_str());
+			getline(ifs, str, ',');
+			printf("%s\n", str.c_str());
+			getline(ifs, str, ',');
+			printf("%s\n", str.c_str());
+			getline(ifs, str, ',');
+			printf("%s\n", str.c_str());
+			break;
+		}
+		case 15:
+		{
+			thread t = thread([&]{printf("Run 1\n");});
+			// t = thread([&]{printf("Run 1\n");}); // Will not work before calling join
+			if (t.joinable())
+				t.join();
+			t = thread([&]{printf("Run 1\n");});
+			if (t.joinable())
+				t.join();
+			break;
+		}
+		case 14:
+		{
+			printf("sizeof(float) = %lu\n", sizeof(float));
+			printf("sizeof(Vec3f) = %lu\n", sizeof(Vec3f));
+			break;
+		}
+		case 13:
+		{
+			// Show warning
+			Order o;
+			printf("a = %d, b = %d\n", o.a, o.b);
+			break;
+		}
 		case 12:
 		{
 			Foo foo;
@@ -558,7 +674,7 @@ int main(int argc, char* argv[])
 			foo.c = "c";
 
 			// Write
-			ofstream ofs("/GitHub/cvip-cpp/0_test/data/operators.txt", std::ofstream::out);
+			ofstream ofs("./operators.txt", std::ofstream::out);
 			ofs << foo;
 			foo.a = 2;
 			foo.b = 2.5;
@@ -567,7 +683,7 @@ int main(int argc, char* argv[])
 			ofs.close();
 
 			// Read
-			ifstream ifs("/GitHub/cvip-cpp/0_test/data/operators.txt", std::ofstream::in);
+			ifstream ifs("./operators.txt", std::ofstream::in);
 			while (true)
 			{
 				Foo bar;
@@ -587,7 +703,7 @@ int main(int argc, char* argv[])
 		}
 		case 10:
 		{
-			FileStorage fs("/GitHub/cvip-cpp/0_test/data/test.xml", FileStorage::READ);
+			FileStorage fs(dataPath + "/" + "test.xml", FileStorage::READ);
 			int a, aa;
 			fs["a"] >> a;
 			cout << "fs[a]: " << a << endl;
@@ -597,8 +713,8 @@ int main(int argc, char* argv[])
 		}
 		case 9:
 		{
-			convertXmlYml("/GitHub/cvip-cpp/0_test/data/test.xml", "/GitHub/cvip-cpp/0_test/data/test_out.yml");
-			convertXmlYml("/GitHub/cvip-cpp/0_test/data/test.yml", "/GitHub/cvip-cpp/0_test/data/test_out.xml");
+			convertXmlYml(dataPath + "/" + "test.xml", dataPath + "/" + "test_out.yml");
+			convertXmlYml(dataPath + "/" + "test.yml", dataPath + "/" + "test_out.xml");
 			break;
 		}
 		case 8:

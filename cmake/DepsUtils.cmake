@@ -2,7 +2,7 @@
 # Configuration
 #---------------
 
-set(deps_path ${CMAKE_CURRENT_SOURCE_DIR}/../Nitrogen/deps)
+set(deps_path ${CMAKE_CURRENT_SOURCE_DIR}/../CommonTools/submodules/Nitrogen/deps)
 
 string(TOLOWER ${CMAKE_SYSTEM_NAME} SYS_NAME)
 string(TOLOWER ${TARGET_ARCH} ARCH)
