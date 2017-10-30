@@ -499,10 +499,21 @@ void writeNode(FileStorage &fs, const FileNode &fn)
 		}
 		case 6:
 		{
-			fs << fn.name() << "{";
-			for (FileNodeIterator it = fn.begin(); it != fn.end(); ++it)
-				writeNode(fs, *it);
-			fs << "}";
+			// It can be a Mat or a map
+			// TODO: find a better way to understand if it is a Mat
+			try
+			{
+				Mat tmp;
+				fn >> tmp;
+				fs << fn.name() << tmp;
+			}
+			catch(cv::Exception &e)
+			{
+				fs << fn.name() << "{";
+				for (FileNodeIterator it = fn.begin(); it != fn.end(); ++it)
+					writeNode(fs, *it);
+				fs << "}";
+			}
 			break;
 		}
 
