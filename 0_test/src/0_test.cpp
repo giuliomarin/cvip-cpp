@@ -567,6 +567,15 @@ public:
 	// Order(): b(a), a(1){} //warning, should be Order():a(1),b(a)
 };
 
+template<class T>
+static inline T getPercentile(std::vector<T> &x, const double percentage)
+{
+	assert(!x.empty());
+	int percPos = static_cast<int>(round(static_cast<double>(x.size() - 1) * percentage / 100.));
+	std::nth_element(x.begin(), x.begin() + percPos, x.end());
+	return x[percPos];
+}
+
 int main(int argc, char* argv[])
 {
 	// Get parameters
@@ -577,8 +586,21 @@ int main(int argc, char* argv[])
 	}
 	string dataPath(argv[1]);
 
-	switch (20)
+	switch (21)
 	{
+		case 21:
+		{
+			vector<int> v = {0, 1};
+			printf("Percentile Value\n");
+			printf("0   %d\n", getPercentile(v, 0.));
+			printf("10  %d\n", getPercentile(v, 10.));
+			printf("30  %d\n", getPercentile(v, 30.));
+			printf("50  %d\n", getPercentile(v, 50.));
+			printf("60  %d\n", getPercentile(v, 60.));
+			printf("80  %d\n", getPercentile(v, 80.));
+			printf("100 %d\n", getPercentile(v, 100.));
+			break;
+		}
 		case 20:
 		{
 			string path = "/dev/null/test.yml";
