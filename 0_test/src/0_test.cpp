@@ -8,6 +8,7 @@
 #include <thread>
 #include "opencv2/core.hpp"
 #include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
 
 using namespace std;
 using namespace cv;
@@ -576,6 +577,25 @@ static inline T getPercentile(std::vector<T> &x, const double percentage)
 	return x[percPos];
 }
 
+template<typename T>
+float polygonArea(const std::vector<T> &vertexList)
+{
+	float area = 0.f;
+	size_t numVertixes = vertexList.size();
+	if (numVertixes > 2)
+	{
+		float sum1 = static_cast<float>(vertexList[numVertixes - 1].x * vertexList[0].y);
+		float sum2 = static_cast<float>(vertexList[0].x * vertexList[numVertixes - 1].y);
+		for (size_t k = 0; k < numVertixes - 1; k++)
+		{
+			sum1 += vertexList[k].x *vertexList[k + 1].y;
+			sum2 += vertexList[k + 1].x *vertexList[k].y;
+		}
+		area = 0.5f * fabs(sum1 - sum2);
+	}
+	return area;
+}
+
 int main(int argc, char* argv[])
 {
 	// Get parameters
@@ -586,8 +606,32 @@ int main(int argc, char* argv[])
 	}
 	string dataPath(argv[1]);
 
-	switch (21)
+	switch (23)
 	{
+		case 23:
+		{
+			{
+				vector<cv::Point2f> data = { cv::Point2f(0.0f, 0.0f), cv::Point2f(1.f, 0.f), cv::Point2f(1.f, 1.f), cv::Point2f(0.f, 1.f) };
+				printf("expected/real/opencv: %.2f/%.2f/%.2f\n", 1.f, polygonArea(data), contourArea(data));
+			}
+			{
+				vector<cv::Point2f> data = { cv::Point2f(3.5f, 2.5f), cv::Point2f(-5.f, 1.f), cv::Point2f(0.f, 0.f), cv::Point2f(10.f, -1.f) };
+				printf("expected/real/opencv: %.2f/%.2f/%.2f\n", 22.25f, polygonArea(data), contourArea(data));
+			}
+			break;
+		}
+		case 22:
+		{
+			vector<int> vec = {1, 2, 3, 4, 5};
+			printf("Before\n");
+			for (const auto v : vec)
+				printf("%d ", v);
+			printf("After\n");
+			random_shuffle(vec.begin(), vec.end());
+			for (const auto v : vec)
+				printf("%d ", v);
+			break;
+		}
 		case 21:
 		{
 			vector<int> v = {0, 1};
