@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <array>
 #include <stack>
 #include <cmath>
 #include <cfloat>
@@ -596,6 +597,23 @@ float polygonArea(const std::vector<T> &vertexList)
 	return area;
 }
 
+void replace(std::string &inoutstr, const std::string &whatToReplaceIn, const std::string &replaceWith)
+{
+	const std::string placeholder = "`12'3-4qXz+*|^";
+	std::string whatToReplace = whatToReplaceIn;
+	for (const std::string &replaceWithTemp : { placeholder, replaceWith })
+	{
+		size_t idxReplaceStart = inoutstr.find(whatToReplace);
+		while (idxReplaceStart != std::string::npos)
+		{
+			size_t idxReplaceStop = idxReplaceStart + whatToReplace.size();
+			inoutstr.replace(inoutstr.begin() + idxReplaceStart, inoutstr.begin() + idxReplaceStop, replaceWithTemp);
+			idxReplaceStart = inoutstr.find(whatToReplace);
+		}
+		whatToReplace = placeholder;
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	// Get parameters
@@ -606,8 +624,56 @@ int main(int argc, char* argv[])
 	}
 	string dataPath(argv[1]);
 
-	switch (23)
+	switch (26)
 	{
+		case 26:
+		{
+			FileStorage fsOut(dataPath + "/testvec_out.yml", FileStorage::WRITE);
+			array<float, 3> arr = {0.f, 1.f, 2.f};
+			vector<float> vec(arr.begin(), arr.end());
+			fsOut << "vec" << vec;
+			fsOut.release();
+			FileStorage fsIn(dataPath + "/testvec_out.yml", FileStorage::READ);
+			vector<float> vecIn;
+			fsIn["vec"] >> vecIn;
+			array<float, 3> arrIn;
+			copy_n(vecIn.begin(), 3, arrIn.begin());
+			printf("%.3f %.3f %.3f\n", arrIn[0], arrIn[1], arrIn[2]);
+			fsIn.release();
+			break;
+		}
+		case 25:
+		{
+			string twoLines = "First\nSecond";
+			printf("%s\n", twoLines.c_str());
+			replace(twoLines, "\n", "\\n");
+			printf("%s\n", twoLines.c_str());
+			break;
+		}
+		case 24:
+		{
+			Mat mat1 = (Mat_<float>(1,3) << 1, 1, 1);
+			Mat mat2 = (Mat_<float>(1,3) << 2, 2, 2);
+			vector<Mat> mats = {mat1, mat2};
+			Mat mat(static_cast<int>(mats.size()), mats[0].cols, CV_32FC1);
+			for (int r = 0; r < mat.rows; r++)
+				mats[r].copyTo(mat.row(r));
+			cout << mat << endl;
+			float *matPtr = mat.ptr<float>(0);
+			Mat mean, std;
+			reduce(mat, mean, 0, REDUCE_AVG);
+			float *meanPtr = mean.ptr<float>(0);
+			printf("avg: [%.3f, %.3f, %.3f]\n", meanPtr[0], meanPtr[1], meanPtr[2]);
+			for (int r = 0; r < mat.rows; r++)
+				mat.row(r) -= mean;
+			printf("mat-avg: [%.3f, %.3f, %.3f]\n", matPtr[0], matPtr[1], matPtr[2]);
+			pow(mat, 2.0, mat);
+			reduce(mat, std, 0, REDUCE_AVG);
+			sqrt(std, std);
+			float *stdPtr = std.ptr<float>(0);
+			printf("std: [%.3f, %.3f, %.3f]\n", stdPtr[0], stdPtr[1], stdPtr[2]);
+			break;
+		}
 		case 23:
 		{
 			{
