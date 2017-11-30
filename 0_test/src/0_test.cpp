@@ -624,8 +624,20 @@ int main(int argc, char* argv[])
 	}
 	string dataPath(argv[1]);
 
-	switch (26)
+	switch (27)
 	{
+		case 27:
+		{
+			Mat img(2, 2, CV_8UC3);
+			img.at<Vec3b>(0, 0) = Vec3b(0, 1, 2);
+			img.at<Vec3b>(0, 1) = Vec3b(0, 1, 2);
+			img.at<Vec3b>(1, 0) = Vec3b(0, 1, 2);
+			img.at<Vec3b>(1, 1) = Vec3b(0, 1, 2);
+			const auto m = mean(img);
+			printf("%f %f %f\n", m[0], m[1], m[2]);
+			printf("%f\n", (m[0] + m[1] + m[2]) / 3.f);
+			break;
+		}
 		case 26:
 		{
 			FileStorage fsOut(dataPath + "/testvec_out.yml", FileStorage::WRITE);
