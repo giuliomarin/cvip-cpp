@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <set>
 #include <array>
 #include <stack>
 #include <cmath>
@@ -13,6 +14,32 @@
 
 using namespace std;
 using namespace cv;
+
+int vander(Mat &v, const Mat &x, const int n)
+{
+	// Check input
+	if (x.rows <= 1 && x.cols <= 1)
+	{
+		printf("Input mast have 1 column or 1 row instead of %dx%d", x.rows, x.cols);
+		return -1;
+	}
+
+	// Make input a column
+	Mat X;
+	if (x.cols > 1)
+		X = x.t();
+	else
+		X = x;
+
+	// Create matrix
+	v = Mat(X.rows, n + 1, X.type());
+	v.col(0).setTo(1);
+	for (int c = 1; c < n + 1; c++)
+	{
+		pow(X, static_cast<double>(c), v.col(c));
+	}
+	return 0;
+}
 
 template<class T>
 T getClosestElement(const std::vector<T> list, const T e)
@@ -614,6 +641,24 @@ void replace(std::string &inoutstr, const std::string &whatToReplaceIn, const st
 	}
 }
 
+class A
+{
+public:
+	virtual void print()
+	{
+		printf("Class A\n");
+	}
+};
+
+class B : public A
+{
+public:
+	virtual void print() override
+	{
+		printf("Class B\n");
+	}
+};
+
 int main(int argc, char* argv[])
 {
 	// Get parameters
@@ -624,8 +669,37 @@ int main(int argc, char* argv[])
 	}
 	string dataPath(argv[1]);
 
-	switch (27)
+	switch (30)
 	{
+		case 30:
+		{
+			Mat x = (Mat_<float>(1,5) << 1, 2, 3, 4, 5);
+			Mat v;
+			vander(v, x, 2);
+			cout << x << endl << v << endl;
+			break;
+		}
+		case 29:
+		{
+			A a;
+			a.print();
+			B b;
+			b.print();
+			break;
+		}
+		case 28:
+		{
+			vector<int> notunique = {1, 2, 3, 3, 4, 5, 1};
+			printf("Not unique: ");
+			for (const auto &e : notunique)
+				printf("%d ", e);
+			set<int> unique;
+			unique.insert(notunique.begin(), notunique.end());
+			printf("\n    unique: ");
+			for (const auto &e : unique)
+				printf("%d ", e);
+			break;
+		}
 		case 27:
 		{
 			Mat img(2, 2, CV_8UC3);
