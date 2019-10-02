@@ -2,7 +2,7 @@ set(project_name 1_opencvgl)
 project(${project_name})
 
 # Inclusion folders
-set(proj_path .)
+set(proj_path "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Add sources to compile exe
 file(GLOB_RECURSE project_src_files ${proj_path}/src/*.cpp)
@@ -12,6 +12,7 @@ add_executable(${project_name} ${project_src_files})
 # Libraries
 # -------------------
 
+include_linmath()
 link_opencv(${project_name})
 link_glfw(${project_name})
 

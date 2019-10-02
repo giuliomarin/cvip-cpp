@@ -1,4 +1,6 @@
 #include <iostream>
+#include <algorithm>
+#include <random>
 #include <vector>
 #include <set>
 #include <array>
@@ -747,14 +749,14 @@ int main(int argc, char* argv[])
 			cout << mat << endl;
 			float *matPtr = mat.ptr<float>(0);
 			Mat mean, std;
-			reduce(mat, mean, 0, REDUCE_AVG);
+			cv::reduce(mat, mean, 0, REDUCE_AVG);
 			float *meanPtr = mean.ptr<float>(0);
 			printf("avg: [%.3f, %.3f, %.3f]\n", meanPtr[0], meanPtr[1], meanPtr[2]);
 			for (int r = 0; r < mat.rows; r++)
 				mat.row(r) -= mean;
 			printf("mat-avg: [%.3f, %.3f, %.3f]\n", matPtr[0], matPtr[1], matPtr[2]);
 			pow(mat, 2.0, mat);
-			reduce(mat, std, 0, REDUCE_AVG);
+			cv::reduce(mat, std, 0, REDUCE_AVG);
 			sqrt(std, std);
 			float *stdPtr = std.ptr<float>(0);
 			printf("std: [%.3f, %.3f, %.3f]\n", stdPtr[0], stdPtr[1], stdPtr[2]);
@@ -779,7 +781,8 @@ int main(int argc, char* argv[])
 			for (const auto v : vec)
 				printf("%d ", v);
 			printf("After\n");
-			random_shuffle(vec.begin(), vec.end());
+			auto rng = std::default_random_engine{};
+			shuffle(vec.begin(), vec.end(), rng);
 			for (const auto v : vec)
 				printf("%d ", v);
 			break;
